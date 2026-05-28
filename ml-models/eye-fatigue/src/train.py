@@ -47,7 +47,7 @@ class EyeFatigueDataset(Dataset):
         synthesize_temporal: bool = True,
     ) -> None:
         self.csv_path = Path(labels_csv)
-        self.data_dir = self.csv_path.parent
+        self.data_dir = self.csv_path.parent.parent / "mrl-dataset" / "train"
         self.transform = transform or transforms.Compose([
             transforms.Resize((48, 48)),
             transforms.ToTensor(),

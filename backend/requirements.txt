@@ -39,7 +39,7 @@ websockets==15.0.1
 
 # --- Computer Vision ---
 opencv-python-headless==4.11.0.86
-mediapipe==0.10.21
+mediapipe==0.10.35
 
 # --- Deep Learning ---
 torch==2.7.0
@@ -67,7 +67,7 @@ pandas==2.2.3
 
 # --- Time Series ---
 prophet==1.1.6
-neuralprophet==0.9.4
+
 
 # --- Reinforcement Learning ---
 stable-baselines3==2.6.0
