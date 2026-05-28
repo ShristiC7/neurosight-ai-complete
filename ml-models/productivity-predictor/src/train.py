@@ -158,7 +158,7 @@ class ProductivityDatasetGenerator:
                 hour = rng.uniform(8, 18)  # Work hours
                 X[i, t, 11] = np.sin(2 * np.pi * hour / 24)
                 X[i, t, 12] = np.cos(2 * np.pi * hour / 24)
-                day = rng.randint(0, 5)  # Weekday
+                day = rng.integers(0, 6)  # Weekday (0-5)
                 X[i, t, 13] = np.sin(2 * np.pi * day / 7)
                 X[i, t, 14] = np.cos(2 * np.pi * day / 7)
 
@@ -181,8 +181,10 @@ class ProductivityTrainer:
     def train_lstm(self, X: np.ndarray, y_prod: np.ndarray, y_burnout: np.ndarray) -> ProductivityLSTM:
         model = ProductivityLSTM().to(self.device)
         optimizer = optim.AdamW(model.parameters(), lr=3e-4, weight_decay=1e-4)
+        # Use ceil to include any partial batch so the scheduler receives the correct total steps
+        steps_per_epoch = (len(X) + 63) // 64  # equivalent to math.ceil(len(X) / 64)
         scheduler = optim.lr_scheduler.OneCycleLR(
-            optimizer, max_lr=1e-3, epochs=50, steps_per_epoch=len(X) // 64
+            optimizer, max_lr=1e-3, epochs=50, steps_per_epoch=steps_per_epoch
         )
 
         X_t = torch.from_numpy(X).to(self.device)
