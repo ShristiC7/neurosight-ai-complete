@@ -1,5 +1,20 @@
 *.zip
 .venv/
+__pycache/
+*.pyc
+
+# Ignore dataset image directories specifically
+**/Open_Eyes/
+**/Closed_Eyes/
+**/mrl-dataset/train/Open_Eyes/
+**/mrl-dataset/train/Closed_Eyes/
+
+# Ignore large local binary checkpoints
+*.onnx
+*.pt
+*.h5
+*.pkl
+.venv/
 __pycache__/
 *.pyc
 

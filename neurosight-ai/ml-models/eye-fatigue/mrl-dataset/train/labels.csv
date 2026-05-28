@@ -1,5 +1,0 @@
-image_path,label,ear_value,subject_id,session_id
-open_eyes/s001_f0001.jpg,0,0.38,s001,morning_1
-open_eyes/s001_f0002.jpg,0,0.36,s001,morning_1
-sleepy_eyes/s001_f0180.jpg,2,0.22,s001,morning_1
-closed_eyes/s001_f0210.jpg,4,0.08,s001,morning_1
