@@ -6,7 +6,7 @@ Builds the behavioral embedding space stored in Qdrant.
 
 from __future__ import annotations
 
-import json
+import argparse
 from pathlib import Path
 
 import numpy as np
@@ -299,5 +299,8 @@ class BehavioralAnalyticsTrainer:
 
 
 if __name__ == "__main__":
-    trainer = BehavioralAnalyticsTrainer()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output-dir", type=str, default="output", help="Directory to save models")
+    args = parser.parse_args()
+    trainer = BehavioralAnalyticsTrainer(model_dir=args.output_dir)
     trainer.run_full_pipeline()
