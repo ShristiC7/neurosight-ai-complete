@@ -1,0 +1,54 @@
+# ============================================================
+# NeuroSight AI — Backend Dockerfile
+# Multi-stage build: development + production
+# ============================================================
+
+FROM python:3.12-slim-bookworm AS base
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential curl libpq-dev libopencv-dev ffmpeg \
+    libsndfile1 libgomp1 git \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /app
+
+FROM base AS deps
+COPY requirements.txt .
+RUN pip install --upgrade pip && pip install -r requirements.txt
+
+FROM deps AS development
+ENV ENVIRONMENT=development DEBUG=true
+COPY . .
+EXPOSE 8000
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--log-level", "debug"]
+
+FROM deps AS builder
+COPY . .
+RUN python -m compileall -b app/
+
+FROM python:3.12-slim-bookworm AS production
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 libopencv-core4.8 ffmpeg libsndfile1 libgomp1 curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd -r neurosight \
+    && useradd -r -g neurosight -d /app -s /sbin/nologin neurosight
+
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 ENVIRONMENT=production
+
+WORKDIR /app
+COPY --from=deps /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=deps /usr/local/bin /usr/local/bin
+COPY --from=builder --chown=neurosight:neurosight /app .
+
+USER neurosight
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", \
+     "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker", \
+     "--log-level", "info", "--access-log"]

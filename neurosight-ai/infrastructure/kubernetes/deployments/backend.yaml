@@ -1,0 +1,170 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: neurosight-backend
+  namespace: neurosight
+  labels:
+    app: neurosight-backend
+    version: "1.0.0"
+    component: api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: neurosight-backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0        # Zero-downtime deploys
+  template:
+    metadata:
+      labels:
+        app: neurosight-backend
+        version: "1.0.0"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: neurosight-backend-sa
+      terminationGracePeriodSeconds: 60
+
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values: ["neurosight-backend"]
+                topologyKey: kubernetes.io/hostname
+
+      containers:
+        - name: backend
+          image: ghcr.io/neurosight-ai/backend:1.0.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+              name: http
+              protocol: TCP
+
+          env:
+            - name: ENVIRONMENT
+              value: "production"
+            - name: POSTGRES_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: neurosight-db-secret
+                  key: host
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: neurosight-db-secret
+                  key: password
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: neurosight-app-secret
+                  key: secret-key
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: neurosight-app-secret
+                  key: jwt-secret-key
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: neurosight-config
+                  key: redis-host
+            - name: QDRANT_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: neurosight-config
+                  key: qdrant-host
+
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5"]
+
+          volumeMounts:
+            - name: ml-models
+              mountPath: /app/ml-models
+              readOnly: true
+
+      volumes:
+        - name: ml-models
+          persistentVolumeClaim:
+            claimName: ml-models-pvc
+
+      imagePullSecrets:
+        - name: ghcr-secret
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: neurosight-backend-hpa
+  namespace: neurosight
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: neurosight-backend
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 120

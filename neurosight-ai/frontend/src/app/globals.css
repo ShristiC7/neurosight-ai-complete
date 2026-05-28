@@ -1,0 +1,322 @@
+@import "tailwindcss";
+
+/* ============================================================
+   NeuroSight AI — Design System
+   Dark-mode first, neuro-tech aesthetic
+   ============================================================ */
+
+@layer base {
+  :root {
+    /* Core palette — deep space + electric accent */
+    --bg-base: #050810;
+    --bg-surface: #0a0f1e;
+    --bg-elevated: #0f1629;
+    --bg-overlay: #141c35;
+
+    --border-subtle: rgba(99, 120, 220, 0.12);
+    --border-default: rgba(99, 120, 220, 0.24);
+    --border-strong: rgba(99, 120, 220, 0.48);
+
+    /* Accent — electric indigo + neon variants */
+    --accent-primary: #4f6ef7;
+    --accent-primary-hover: #6b85ff;
+    --accent-secondary: #00d9c8;
+    --accent-tertiary: #a855f7;
+
+    /* Semantic colors */
+    --success: #10b981;
+    --success-muted: rgba(16, 185, 129, 0.12);
+    --warning: #f59e0b;
+    --warning-muted: rgba(245, 158, 11, 0.12);
+    --danger: #ef4444;
+    --danger-muted: rgba(239, 68, 68, 0.12);
+    --info: #3b82f6;
+    --info-muted: rgba(59, 130, 246, 0.12);
+
+    /* Fatigue score colors */
+    --fatigue-alert: #10b981;
+    --fatigue-mild: #f59e0b;
+    --fatigue-moderate: #f97316;
+    --fatigue-severe: #ef4444;
+    --fatigue-critical: #dc2626;
+
+    /* Text hierarchy */
+    --text-primary: rgba(255, 255, 255, 0.95);
+    --text-secondary: rgba(255, 255, 255, 0.6);
+    --text-tertiary: rgba(255, 255, 255, 0.35);
+    --text-disabled: rgba(255, 255, 255, 0.2);
+
+    /* Glow effects */
+    --glow-primary: 0 0 40px rgba(79, 110, 247, 0.3);
+    --glow-secondary: 0 0 40px rgba(0, 217, 200, 0.3);
+    --glow-danger: 0 0 40px rgba(239, 68, 68, 0.3);
+
+    /* Layout */
+    --sidebar-width: 260px;
+    --header-height: 64px;
+    --panel-radius: 16px;
+    --card-radius: 12px;
+
+    /* Typography */
+    --font-display: "Syne", "Space Grotesk", system-ui, sans-serif;
+    --font-body: "DM Sans", "Manrope", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+    /* Animation */
+    --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-sharp: cubic-bezier(0.4, 0, 1, 1);
+
+    --duration-fast: 150ms;
+    --duration-base: 250ms;
+    --duration-slow: 400ms;
+  }
+
+  * {
+    box-sizing: border-box;
+    border-color: var(--border-subtle);
+  }
+
+  html {
+    color-scheme: dark;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100dvh;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-default);
+    border-radius: 99px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--border-strong);
+  }
+
+  /* Selection */
+  ::selection {
+    background: rgba(79, 110, 247, 0.3);
+    color: white;
+  }
+}
+
+/* ============================================================
+   Custom Utilities
+   ============================================================ */
+
+@layer utilities {
+  /* Glass morphism */
+  .glass {
+    background: rgba(15, 22, 41, 0.7);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid var(--border-subtle);
+  }
+
+  .glass-strong {
+    background: rgba(10, 15, 30, 0.85);
+    backdrop-filter: blur(24px) saturate(200%);
+    -webkit-backdrop-filter: blur(24px) saturate(200%);
+    border: 1px solid var(--border-default);
+  }
+
+  /* Glow utilities */
+  .glow-primary {
+    box-shadow: var(--glow-primary);
+  }
+
+  .glow-secondary {
+    box-shadow: var(--glow-secondary);
+  }
+
+  .glow-danger {
+    box-shadow: var(--glow-danger);
+  }
+
+  /* Gradient text */
+  .text-gradient-primary {
+    background: linear-gradient(135deg, #4f6ef7, #00d9c8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-neural {
+    background: linear-gradient(135deg, #a855f7, #4f6ef7, #00d9c8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Panel styles */
+  .panel {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--panel-radius);
+    padding: 1.5rem;
+  }
+
+  .card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--card-radius);
+    padding: 1.25rem;
+  }
+
+  /* Neural grid background */
+  .neural-grid {
+    background-image:
+      linear-gradient(rgba(79, 110, 247, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(79, 110, 247, 0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Score ring */
+  .score-ring {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Pulse animation for live indicators */
+  .live-pulse {
+    position: relative;
+  }
+
+  .live-pulse::before {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border-radius: inherit;
+    background: currentColor;
+    opacity: 0.3;
+    animation: pulse-ring 2s ease-out infinite;
+  }
+
+  /* Metric trend arrows */
+  .trend-up::before { content: "↑ "; color: var(--success); }
+  .trend-down::before { content: "↓ "; color: var(--danger); }
+  .trend-stable::before { content: "→ "; color: var(--text-secondary); }
+
+  /* Status indicators */
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .status-dot.active {
+    background: var(--success);
+    box-shadow: 0 0 8px var(--success);
+    animation: blink 2s ease-in-out infinite;
+  }
+
+  .status-dot.warning {
+    background: var(--warning);
+    box-shadow: 0 0 8px var(--warning);
+  }
+
+  .status-dot.danger {
+    background: var(--danger);
+    box-shadow: 0 0 8px var(--danger);
+    animation: blink 1s ease-in-out infinite;
+  }
+
+  /* Font utilities */
+  .font-display { font-family: var(--font-display); }
+  .font-mono { font-family: var(--font-mono); }
+}
+
+/* ============================================================
+   Animations
+   ============================================================ */
+
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.4; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes scan {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes wave-data {
+  0% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1); }
+  100% { transform: scaleY(0.3); }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Loading skeleton */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-elevated) 25%,
+    var(--bg-overlay) 37%,
+    var(--bg-elevated) 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
+/* Recharts custom */
+.recharts-tooltip-wrapper {
+  outline: none !important;
+}
+
+.recharts-default-tooltip {
+  background: var(--bg-overlay) !important;
+  border: 1px solid var(--border-default) !important;
+  border-radius: 8px !important;
+  color: var(--text-primary) !important;
+}

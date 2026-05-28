@@ -1,0 +1,95 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: neurosight-prod
+    env: production
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+# Load alerting rules
+rule_files:
+  - "alerts/*.yml"
+
+scrape_configs:
+  # --------------------------------------------------------
+  # Backend FastAPI — Prometheus client
+  # --------------------------------------------------------
+  - job_name: neurosight-backend
+    static_configs:
+      - targets: ["backend:8000"]
+    metrics_path: /metrics
+    scrape_interval: 10s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: neurosight-backend
+
+  # --------------------------------------------------------
+  # Celery Workers — via Flower
+  # --------------------------------------------------------
+  - job_name: celery-workers
+    static_configs:
+      - targets: ["flower:5555"]
+    metrics_path: /metrics
+
+  # --------------------------------------------------------
+  # PostgreSQL — via postgres_exporter
+  # --------------------------------------------------------
+  - job_name: postgres
+    static_configs:
+      - targets: ["postgres-exporter:9187"]
+    scrape_interval: 30s
+
+  # --------------------------------------------------------
+  # Redis — via redis_exporter
+  # --------------------------------------------------------
+  - job_name: redis
+    static_configs:
+      - targets: ["redis-exporter:9121"]
+    scrape_interval: 15s
+
+  # --------------------------------------------------------
+  # Node Exporter (system metrics)
+  # --------------------------------------------------------
+  - job_name: node
+    static_configs:
+      - targets: ["node-exporter:9100"]
+    scrape_interval: 30s
+
+  # --------------------------------------------------------
+  # Qdrant
+  # --------------------------------------------------------
+  - job_name: qdrant
+    static_configs:
+      - targets: ["qdrant:6333"]
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # --------------------------------------------------------
+  # Kubernetes pods (if running in k8s)
+  # --------------------------------------------------------
+  - job_name: kubernetes-pods
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: "true"
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
