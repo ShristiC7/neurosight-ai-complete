@@ -49,8 +49,8 @@ class SpectrogramCNN(nn.Module):
             nn.MaxPool2d((2, 1)),
         )
 
-        # Collapse frequency dimension
-        self.freq_pool = nn.AdaptiveAvgPool2d((1, None))
+        # Collapse frequency dimension via mean (compatible with ONNX)
+        self.freq_pool = None  # placeholder; not used
         self.proj = nn.Linear(256, output_dim)
 
     def _conv_block(self, in_ch: int, out_ch: int, kernel_size: tuple) -> nn.Sequential:
@@ -67,7 +67,11 @@ class SpectrogramCNN(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
         # x: (B, 1, 128, T)
         x = self.encoder(x)          # (B, 256, freq', T')
-        x = self.freq_pool(x)        # (B, 256, 1, T')
+        if self.freq_pool is not None:
+            x = self.freq_pool(x)    # (B, 256, 1, T')
+        else:
+            # Collapse frequency dimension via mean (compatible with ONNX)
+            x = x.mean(dim=2, keepdim=True)  # (B, 256, 1, T')
         x = x.squeeze(2).transpose(1, 2)  # (B, T', 256)
         x = self.proj(x)             # (B, T', output_dim)
         return x
