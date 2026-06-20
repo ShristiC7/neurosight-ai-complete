@@ -125,12 +125,12 @@ class Settings(BaseSettings):
     # -----------------------------------------------------------
     # ML Model Paths
     # -----------------------------------------------------------
-    MODEL_DIR: str = "/app/ml-models"
-    EYE_FATIGUE_MODEL_PATH: str = "/app/ml-models/eye-fatigue/model.onnx"
-    VOICE_STRESS_MODEL_PATH: str = "/app/ml-models/voice-stress/model.onnx"
-    BEHAVIORAL_MODEL_PATH: str = "/app/ml-models/behavioral/model.onnx"
-    PRODUCTIVITY_MODEL_PATH: str = "/app/ml-models/productivity/model.onnx"
-    RL_AGENT_PATH: str = "/app/ml-models/rl-agent/agent.zip"
+    MODEL_DIR: str = "/app/models"
+    EYE_FATIGUE_MODEL_PATH: str = "/app/models/eye_fatigue.onnx"
+    VOICE_STRESS_MODEL_PATH: str = "/app/models/voice_stress.onnx"
+    BEHAVIORAL_MODEL_PATH: str = "/app/models/isolation_forest.pkl"
+    PRODUCTIVITY_MODEL_PATH: str = "/app/models/productivity_lstm.onnx"
+    RL_AGENT_PATH: str = "/app/models/rl_agent.zip"
 
     # Inference
     INFERENCE_DEVICE: Literal["cpu", "cuda", "mps"] = "cpu"
