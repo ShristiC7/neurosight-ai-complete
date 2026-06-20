@@ -50,7 +50,8 @@ def run_simulation(steps: int):
         loss = agent.train_step()
 
         if (step + 1) % 5000 == 0:
-            print(f"  Step {step+1:,} | ε={agent.epsilon:.3f} | Loss={loss:.4f if loss else 'N/A'}")
+            loss_str = f"{loss:.4f}" if loss is not None else "N/A"
+            print(f"  Step {step+1:,} | eps={agent.epsilon:.3f} | Loss={loss_str}")
 
     agent.save("../agent.zip")
     print(f"\nPre-training complete! Saved to ml-models/rl-agent/agent.zip")

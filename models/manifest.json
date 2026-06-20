@@ -1,0 +1,23 @@
+{
+  "eye_fatigue": {
+    "onnx": "eye_fatigue.onnx",
+    "pt": "eye_fatigue.pt"
+  },
+  "behavioral_analytics": {
+    "onnx": "autoencoder.onnx",
+    "pkl_isolation": "isolation_forest.pkl",
+    "pkl_scaler": "scaler.pkl"
+  },
+  "voice_stress": {
+    "onnx": "voice_stress.onnx",
+    "pt": "voice_stress.pt"
+  },
+  "productivity_predictor": {
+    "onnx": "productivity_lstm.onnx",
+    "pt": "productivity_lstm.pt",
+    "json": "productivity_xgb.json"
+  },
+  "rl_recommendation_agent": {
+    "zip": "rl_agent.zip"
+  }
+}
