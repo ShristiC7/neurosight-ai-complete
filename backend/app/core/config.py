@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     # -----------------------------------------------------------
     APP_NAME: str = "NeuroSight AI"
     APP_VERSION: str = "1.0.0"
-    ENVIRONMENT: Literal["development", "staging", "production"] = "development"
+    ENVIRONMENT: Literal["development", "staging", "production", "testing"] = "development"
     DEBUG: bool = False
     SECRET_KEY: str = Field(min_length=32)
     API_PREFIX: str = "/api/v1"

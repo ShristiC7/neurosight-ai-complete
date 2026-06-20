@@ -18,6 +18,15 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.session import BaseModel, Base, TimestampMixin, UUIDMixin
 import enum
 
+class MetadataDescriptor:
+    def __get__(self, instance, owner):
+        if instance is None:
+            return Base.metadata
+        return instance.metadata_json
+
+    def __set__(self, instance, value):
+        instance.metadata_json = value
+
 
 # -----------------------------------------------------------
 # Enums
@@ -298,7 +307,8 @@ class Recommendation(BaseModel):
     duration_minutes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     accepted: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    metadata: Mapped[dict] = mapped_column(JSON, default=dict)
+    metadata_json: Mapped[dict] = mapped_column("metadata", JSON, default=dict)
+    metadata = MetadataDescriptor()
 
     # RL tracking
     rl_state_vector: Mapped[list] = mapped_column(JSON, default=list)
@@ -325,4 +335,5 @@ class BehavioralEmbedding(BaseModel):
     timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     qdrant_point_id: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
     embedding_dim: Mapped[int] = mapped_column(Integer, default=256)
-    metadata: Mapped[dict] = mapped_column(JSON, default=dict)
+    metadata_json: Mapped[dict] = mapped_column("metadata", JSON, default=dict)
+    metadata = MetadataDescriptor()

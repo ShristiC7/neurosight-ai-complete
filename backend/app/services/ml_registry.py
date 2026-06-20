@@ -81,6 +81,14 @@ class ONNXModel:
 # -----------------------------------------------------------
 # PyTorch Model Wrapper (for training/dev mode)
 # -----------------------------------------------------------
+def self_inference_mode(fn):
+    """Decorator — ensures no gradients are computed."""
+    import torch
+    def wrapper(*args, **kwargs):
+        with torch.inference_mode():
+            return fn(*args, **kwargs)
+    return wrapper
+
 class TorchModel:
     """Wrapper for PyTorch models with lazy device placement."""
 

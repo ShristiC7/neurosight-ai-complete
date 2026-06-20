@@ -6,7 +6,7 @@ JWT token creation/verification, password hashing, auth dependencies.
 import hashlib
 import secrets
 from datetime import datetime, timedelta, timezone
-from typing import Annotated, Any
+from typing import Annotated, Any, Optional
 from uuid import UUID
 
 import structlog
@@ -144,6 +144,29 @@ async def get_current_user(
     if not user or not user.is_active:
         raise credentials_exception
 
+    return user
+async def get_current_user_optional(
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(security)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> Optional[Any]:
+    """Return the current user if a valid JWT is provided, otherwise None.
+    Useful for endpoints where authentication is optional.
+    """
+    if not credentials:
+        return None
+    try:
+        payload = decode_access_token(credentials.credentials)
+        user_id: str | None = payload.get("sub")
+        token_type: str | None = payload.get("type")
+        if not user_id or token_type != "access":
+            return None
+    except JWTError:
+        return None
+    from app.services.user_service import UserService
+    user_service = UserService(db)
+    user = await user_service.get_by_id(UUID(user_id))
+    if not user or not user.is_active:
+        return None
     return user
 
 
