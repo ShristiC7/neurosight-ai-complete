@@ -6,6 +6,7 @@ Aggregates all endpoint modules with proper tagging and prefixes.
 from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
+    analytics,
     auth,
     fatigue,
     audio,
@@ -19,6 +20,12 @@ from app.api.v1.endpoints import (
 )
 
 api_router = APIRouter()
+
+api_router.include_router(
+    analytics.router,
+    prefix="/analytics",
+    tags=["Batch Historical Analytics"],
+)
 
 # -----------------------------------------------------------
 # Register endpoint modules
