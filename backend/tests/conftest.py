@@ -11,17 +11,23 @@ import sys
 # Set a higher recursion limit to avoid Rich RecursionError in deep model objects
 sys.setrecursionlimit(5000)
 
-# Override database to use test DB before any app imports
-os.environ.setdefault("ENVIRONMENT", "testing")
-os.environ.setdefault("POSTGRES_HOST", "localhost")
-os.environ.setdefault("POSTGRES_PORT", "5433")  # user-space test postgres
-os.environ.setdefault("POSTGRES_DB", "neurosight_test")
-os.environ.setdefault("POSTGRES_USER", "neurosight")
-os.environ.setdefault("SECRET_KEY", "test-secret-key-exactly-32-characters-long!")
-os.environ.setdefault("JWT_SECRET_KEY", "test-jwt-key-exactly-32-characters-ok!")
-os.environ.setdefault("POSTGRES_PASSWORD", "neurosight_dev_password")
-os.environ.setdefault("REDIS_HOST", "localhost")
-os.environ.setdefault("QDRANT_HOST", "localhost")
+# Force-set environment variables BEFORE any app code is imported.
+# Using [] not setdefault so these override anything in .env file.
+os.environ["ENVIRONMENT"] = "testing"
+os.environ["POSTGRES_HOST"] = "localhost"
+os.environ["POSTGRES_PORT"] = "5433"   # user-space test postgres
+os.environ["POSTGRES_DB"] = "neurosight_test"
+os.environ["POSTGRES_USER"] = "neurosight"
+os.environ["POSTGRES_PASSWORD"] = "neurosight_dev_password"
+os.environ["SECRET_KEY"] = "test-secret-key-exactly-32-characters-long!"
+os.environ["JWT_SECRET_KEY"] = "test-jwt-key-exactly-32-characters-ok!"
+os.environ["REDIS_HOST"] = "localhost"
+os.environ["QDRANT_HOST"] = "localhost"
+
+# Clear pydantic-settings lru_cache so Settings() re-reads from env
+from app.core.config import get_settings
+get_settings.cache_clear()
+
 
 
 @pytest.fixture(scope="session")
