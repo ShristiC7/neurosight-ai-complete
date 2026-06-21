@@ -13,10 +13,13 @@ sys.setrecursionlimit(5000)
 
 # Override database to use test DB before any app imports
 os.environ.setdefault("ENVIRONMENT", "testing")
-os.environ.setdefault("POSTGRES_DB", os.environ.get("POSTGRES_DB", "neurosight_test"))
+os.environ.setdefault("POSTGRES_HOST", "localhost")
+os.environ.setdefault("POSTGRES_PORT", "5433")  # user-space test postgres
+os.environ.setdefault("POSTGRES_DB", "neurosight_test")
+os.environ.setdefault("POSTGRES_USER", "neurosight")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-exactly-32-characters-long!")
 os.environ.setdefault("JWT_SECRET_KEY", "test-jwt-key-exactly-32-characters-ok!")
-os.environ.setdefault("POSTGRES_PASSWORD", os.environ.get("POSTGRES_PASSWORD", "neurosight_dev_password"))
+os.environ.setdefault("POSTGRES_PASSWORD", "neurosight_dev_password")
 os.environ.setdefault("REDIS_HOST", "localhost")
 os.environ.setdefault("QDRANT_HOST", "localhost")
 
@@ -46,3 +49,17 @@ async def fakeredis_client():
     yield client
     await client.flushall()
     await client.close()
+
+
+@pytest.fixture(scope="session", autouse=True)
+async def setup_test_db():
+    """Create all SQLAlchemy tables in the test database before the test session."""
+    from app.db.session import engine, Base
+    # import all models so they are registered on Base.metadata
+    import app.models.models  # noqa: F401
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+    await engine.dispose()

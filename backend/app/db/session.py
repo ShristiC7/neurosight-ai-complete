@@ -95,18 +95,6 @@ class BaseModel(UUIDMixin, TimestampMixin, Base):
 # -----------------------------------------------------------
 # Dependency — Async DB Session
 # -----------------------------------------------------------
-import importlib.util
-import pathlib
-
-# Load the actual FatigueClassifier from the eye‑fatigue model implementation
-_eye_fatigue_path = pathlib.Path(__file__).resolve().parents[3] / "ml-models" / "eye-fatigue" / "src" / "model.py"
-_spec = importlib.util.spec_from_file_location("eye_fatigue_model", _eye_fatigue_path)
-_eye_fatigue_mod = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(_eye_fatigue_mod)
-
-# Re‑export the correct class under the expected name
-FatigueClassifier = _eye_fatigue_mod.FatigueClassifier
-
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
     FastAPI dependency that provides an async DB session.
@@ -121,3 +109,29 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             raise
         finally:
             await session.close()
+
+
+# -----------------------------------------------------------
+# Lazy FatigueClassifier Accessor
+# -----------------------------------------------------------
+_fatigue_classifier = None
+
+def get_fatigue_classifier():
+    """
+    Lazily load the FatigueClassifier from the ml-models directory.
+    Only imported on first call to avoid breaking imports in testing/CI.
+    """
+    global _fatigue_classifier
+    if _fatigue_classifier is None:
+        import importlib.util
+        import pathlib
+        _eye_fatigue_path = (
+            pathlib.Path(__file__).resolve().parents[3]
+            / "ml-models" / "eye-fatigue" / "src" / "model.py"
+        )
+        _spec = importlib.util.spec_from_file_location("eye_fatigue_model", _eye_fatigue_path)
+        _eye_fatigue_mod = importlib.util.module_from_spec(_spec)
+        _spec.loader.exec_module(_eye_fatigue_mod)
+        _fatigue_classifier = _eye_fatigue_mod.FatigueClassifier
+    return _fatigue_classifier
+

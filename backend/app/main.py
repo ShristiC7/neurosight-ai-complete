@@ -36,19 +36,26 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     configure_logging()
     logger.info("NeuroSight AI starting up", env=settings.ENVIRONMENT)
 
+    is_testing = settings.ENVIRONMENT == "testing"
+
     # Initialize database tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     logger.info("Database tables initialized")
 
-    # Connect to Redis
-    await redis_client.ping()
-    logger.info("Redis connection established")
+    # Connect to Redis (skip in testing — fakeredis handles it)
+    if not is_testing:
+        try:
+            await redis_client.ping()
+            logger.info("Redis connection established")
+        except Exception as exc:
+            logger.warning("Redis unavailable at startup", error=str(exc))
 
-    # Pre-load ML models into memory (warm-up)
-    from app.services.ml_registry import ModelRegistry
-    await ModelRegistry.initialize()
-    logger.info("ML models loaded", models=ModelRegistry.loaded_models())
+    # Pre-load ML models into memory (skip in testing to keep tests fast)
+    if not is_testing:
+        from app.services.ml_registry import ModelRegistry
+        await ModelRegistry.initialize()
+        logger.info("ML models loaded", models=ModelRegistry.loaded_models())
 
     logger.info("NeuroSight AI ready", port=8000)
 
@@ -57,9 +64,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Graceful shutdown
     logger.info("Shutting down NeuroSight AI...")
     await ws_manager.close_all()
-    await redis_client.close()
+    if not is_testing:
+        await redis_client.close()
     await engine.dispose()
     logger.info("Shutdown complete")
+
 
 
 # -----------------------------------------------------------
