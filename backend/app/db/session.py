@@ -82,6 +82,9 @@ class BaseModel(UUIDMixin, TimestampMixin, Base):
 
     __abstract__ = True
 
+    def __rich_repr__(self):
+        return (self.id,)
+
     def to_dict(self) -> dict:
         return {
             col.name: getattr(self, col.name)
@@ -92,6 +95,18 @@ class BaseModel(UUIDMixin, TimestampMixin, Base):
 # -----------------------------------------------------------
 # Dependency — Async DB Session
 # -----------------------------------------------------------
+import importlib.util
+import pathlib
+
+# Load the actual FatigueClassifier from the eye‑fatigue model implementation
+_eye_fatigue_path = pathlib.Path(__file__).resolve().parents[3] / "ml-models" / "eye-fatigue" / "src" / "model.py"
+_spec = importlib.util.spec_from_file_location("eye_fatigue_model", _eye_fatigue_path)
+_eye_fatigue_mod = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_eye_fatigue_mod)
+
+# Re‑export the correct class under the expected name
+FatigueClassifier = _eye_fatigue_mod.FatigueClassifier
+
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
     FastAPI dependency that provides an async DB session.

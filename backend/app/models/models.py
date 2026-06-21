@@ -5,7 +5,7 @@ Full schema for all platform entities.
 
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, Any
 
 from sqlalchemy import (
     Boolean, DateTime, Float, ForeignKey, Index,
@@ -71,6 +71,9 @@ class RecommendationPriority(str, enum.Enum):
 # User
 # -----------------------------------------------------------
 class User(BaseModel):
+    def __rich_repr__(self):
+        return (self.id,)
+
     __tablename__ = "users"
 
     name: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -83,13 +86,13 @@ class User(BaseModel):
     preferences: Mapped[dict] = mapped_column(JSON, default=dict)
 
     # Relationships
-    sessions: Mapped[list["WorkSession"]] = relationship(
+    sessions: Mapped[List["WorkSession"]] = relationship(
         "WorkSession", back_populates="user", cascade="all, delete-orphan"
     )
-    fatigue_metrics: Mapped[list["FatigueMetric"]] = relationship(
+    fatigue_metrics: Mapped[List["FatigueMetric"]] = relationship(
         "FatigueMetric", back_populates="user", cascade="all, delete-orphan"
     )
-    recommendations: Mapped[list["Recommendation"]] = relationship(
+    recommendations: Mapped[List["Recommendation"]] = relationship(
         "Recommendation", back_populates="user", cascade="all, delete-orphan"
     )
 
@@ -111,12 +114,17 @@ class RefreshToken(BaseModel):
     is_revoked: Mapped[bool] = mapped_column(Boolean, default=False)
     user_agent: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     ip_address: Mapped[Optional[str]] = mapped_column(String(45), nullable=True)
+    def __rich_repr__(self):
+        return (self.id,)
 
 
 # -----------------------------------------------------------
 # Work Session
 # -----------------------------------------------------------
 class WorkSession(BaseModel):
+    def __rich_repr__(self):
+        return (self.id,)
+
     __tablename__ = "work_sessions"
     __table_args__ = (
         Index("ix_work_sessions_user_id_start", "user_id", "start_time"),
@@ -140,10 +148,10 @@ class WorkSession(BaseModel):
 
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="sessions")
-    fatigue_metrics: Mapped[list["FatigueMetric"]] = relationship(
+    fatigue_metrics: Mapped[List["FatigueMetric"]] = relationship(
         "FatigueMetric", back_populates="session", cascade="all, delete-orphan"
     )
-    productivity_predictions: Mapped[list["ProductivityPrediction"]] = relationship(
+    productivity_predictions: Mapped[List["ProductivityPrediction"]] = relationship(
         "ProductivityPrediction", back_populates="session", cascade="all, delete-orphan"
     )
 
@@ -152,6 +160,9 @@ class WorkSession(BaseModel):
 # Fatigue Metrics
 # -----------------------------------------------------------
 class FatigueMetric(BaseModel):
+    def __rich_repr__(self):
+        return (self.id,)
+
     __tablename__ = "fatigue_metrics"
     __table_args__ = (
         Index("ix_fatigue_metrics_user_time", "user_id", "timestamp"),
@@ -187,6 +198,9 @@ class FatigueMetric(BaseModel):
 # Voice Stress Metrics
 # -----------------------------------------------------------
 class VoiceStressMetric(BaseModel):
+    def __rich_repr__(self):
+        return (self.id,)
+
     __tablename__ = "voice_stress_metrics"
     __table_args__ = (
         Index("ix_voice_stress_user_time", "user_id", "timestamp"),
@@ -209,7 +223,7 @@ class VoiceStressMetric(BaseModel):
     emotion_state: Mapped[EmotionState] = mapped_column(
         SAEnum(EmotionState), nullable=False
     )
-    mfcc_features: Mapped[list] = mapped_column(JSON, default=list)
+    mfcc_features: Mapped[List[float]] = mapped_column(JSON, default=list)
     confidence: Mapped[float] = mapped_column(Float, default=0.75)
 
 
@@ -217,6 +231,9 @@ class VoiceStressMetric(BaseModel):
 # Behavioral Metrics
 # -----------------------------------------------------------
 class BehavioralMetric(BaseModel):
+    def __rich_repr__(self):
+        return (self.id,)
+
     __tablename__ = "behavioral_metrics"
     __table_args__ = (
         Index("ix_behavioral_user_time", "user_id", "timestamp"),
@@ -248,6 +265,9 @@ class BehavioralMetric(BaseModel):
 # Productivity Prediction
 # -----------------------------------------------------------
 class ProductivityPrediction(BaseModel):
+    def __rich_repr__(self):
+        return (self.id,)
+
     __tablename__ = "productivity_predictions"
     __table_args__ = (
         Index("ix_productivity_user_time", "user_id", "timestamp"),
@@ -282,6 +302,9 @@ class ProductivityPrediction(BaseModel):
 # Recommendations
 # -----------------------------------------------------------
 class Recommendation(BaseModel):
+    def __rich_repr__(self):
+        return (self.id,)
+
     __tablename__ = "recommendations"
     __table_args__ = (
         Index("ix_recommendations_user_time", "user_id", "timestamp"),
@@ -311,7 +334,7 @@ class Recommendation(BaseModel):
     metadata = MetadataDescriptor()
 
     # RL tracking
-    rl_state_vector: Mapped[list] = mapped_column(JSON, default=list)
+    rl_state_vector: Mapped[List[Any]] = mapped_column(JSON, default=list)
     rl_action_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     reward: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
 
@@ -337,3 +360,5 @@ class BehavioralEmbedding(BaseModel):
     embedding_dim: Mapped[int] = mapped_column(Integer, default=256)
     metadata_json: Mapped[dict] = mapped_column("metadata", JSON, default=dict)
     metadata = MetadataDescriptor()
+    def __rich_repr__(self):
+        return (self.id,)

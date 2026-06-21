@@ -6,6 +6,10 @@ import os
 import asyncio
 import pytest
 import pytest_asyncio
+import sys
+
+# Set a higher recursion limit to avoid Rich RecursionError in deep model objects
+sys.setrecursionlimit(5000)
 
 # Override database to use test DB before any app imports
 os.environ.setdefault("ENVIRONMENT", "testing")

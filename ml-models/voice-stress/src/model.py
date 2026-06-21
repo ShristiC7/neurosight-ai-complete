@@ -309,16 +309,14 @@ def create_voice_stress_model(
 # -----------------------------------------------------------
 # Compatibility Stub
 # -----------------------------------------------------------
-class FatigueClassifier:
-    """Stub class to satisfy imports expecting FatigueClassifier.
+import importlib.util
+import pathlib
 
-    The eye‑fatigue model provides the real implementation. This stub raises
-    ``NotImplementedError`` when instantiated, ensuring that any accidental
-    usage is caught during development while allowing the test suite to import
-    the symbol without error.
-    """
+# Load the actual FatigueClassifier from the eye‑fatigue model implementation
+_eye_fatigue_path = pathlib.Path(__file__).resolve().parents[2] / "eye-fatigue" / "src" / "model.py"
+_spec = importlib.util.spec_from_file_location("eye_fatigue_model", _eye_fatigue_path)
+_eye_fatigue_mod = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_eye_fatigue_mod)
 
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError(
-            "FatigueClassifier is not implemented in the voice‑stress module."
-        )
+# Re‑export the correct class under the expected name
+FatigueClassifier = _eye_fatigue_mod.FatigueClassifier
