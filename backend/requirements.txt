@@ -28,6 +28,7 @@ psycopg2-binary==2.9.10
 
 # --- Redis & Celery ---
 redis==6.1.0
+fakeredis>=2.36.2
 celery==5.5.2
 flower==2.0.1
 

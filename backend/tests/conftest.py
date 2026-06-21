@@ -29,3 +29,20 @@ def event_loop_policy():
 @pytest.fixture(scope="session")
 def anyio_backend():
     return "asyncio"
+
+@pytest.fixture(scope="session", autouse=True)
+async def fakeredis_client():
+    """Create a fake async Redis client for the test session.
+    This replaces the real Redis client used by the application with an
+    in‑memory mock provided by `fakeredis`. It ensures that integration
+    tests that depend on Redis do not require a live Redis server.
+    """
+    import fakeredis
+    client = fakeredis.FakeAsyncRedis(decode_responses=True)
+    # Monkey‑patch the global redis_client used throughout the codebase
+    from app.core import redis as redis_mod
+    redis_mod.redis_client = client
+    redis_mod.cache = redis_mod.CacheClient(client)
+    yield client
+    await client.flushall()
+    await client.close()
