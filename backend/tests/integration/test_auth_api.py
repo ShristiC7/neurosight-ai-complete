@@ -27,7 +27,7 @@ async def client():
 async def registered_user(client):
     """Helper: registers a unique user and returns the response body."""
     import time
-    email = f"test_{int(time.time() * 1000)}@neurosight.test"
+    email = f"test_{int(time.time() * 1000)}@neurosight.com"
     resp = await client.post("/api/v1/auth/register", json={
         "name": "Integration Test User",
         "email": email,

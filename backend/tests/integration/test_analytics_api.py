@@ -16,21 +16,27 @@ def anyio_backend():
 async def auth_client():
     """Client with a registered and logged-in user."""
     import time
+    print("STARTING auth_client fixture")
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as c:
+        print("ASYNC CLIENT CREATED")
         email = f"analytics_test_{int(time.time()*1000)}@test.com"
         reg = await c.post("/api/v1/auth/register", json={
             "name": "Analytics Tester",
             "email": email,
             "password": "SecurePass123!",
         })
-        token = reg.json()["access_token"]
+        print(f"REGISTRATION DONE: {reg.status_code}")
+        token = reg.json().get("access_token")
         c.headers["Authorization"] = f"Bearer {token}"
         yield c
+        print("ENDING auth_client fixture")
 
 
 @pytest.mark.anyio
 async def test_get_batch_analytics_defaults(auth_client):
+    print("STARTING test_get_batch_analytics_defaults")
     resp = await auth_client.get("/api/v1/analytics/batch")
+    print(f"GET /batch DONE: {resp.status_code}")
     assert resp.status_code == 200
     data = resp.json()
     assert "user_id" in data
