@@ -133,7 +133,7 @@ async def get_current_user(
             raise credentials_exception
 
     except JWTError as e:
-        logger.debug("JWT validation failed", error=str(e))
+        logger.error("JWT validation failed", error=str(e))
         raise credentials_exception
 
     # Load user from DB

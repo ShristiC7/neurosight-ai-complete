@@ -305,3 +305,20 @@ def create_voice_stress_model(
         model.load_state_dict(state_dict)
 
     return model.to(device).eval()
+
+# -----------------------------------------------------------
+# Compatibility Stub
+# -----------------------------------------------------------
+class FatigueClassifier:
+    """Stub class to satisfy imports expecting FatigueClassifier.
+
+    The eye‑fatigue model provides the real implementation. This stub raises
+    ``NotImplementedError`` when instantiated, ensuring that any accidental
+    usage is caught during development while allowing the test suite to import
+    the symbol without error.
+    """
+
+    def __init__(self, *args, **kwargs):
+        raise NotImplementedError(
+            "FatigueClassifier is not implemented in the voice‑stress module."
+        )

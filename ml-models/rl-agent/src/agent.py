@@ -242,6 +242,7 @@ class ProductivityRLAgent:
         batch_size: int = 64,
         target_update_freq: int = 500,
         device: str = "cpu",
+        seed: int = 42,
     ) -> None:
 
         self.state_dim = state_dim
@@ -256,8 +257,16 @@ class ProductivityRLAgent:
         self.device = torch.device(device)
         self.steps_done = 0
 
+        # Set seeds for reproducibility
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        if self.device.type == "cuda":
+            torch.cuda.manual_seed_all(seed)
+
         # Online + target networks (Double DQN)
         self.q_network = DQNetwork(state_dim, action_dim).to(self.device)
+        self.q_network.eval()
         self.target_network = DQNetwork(state_dim, action_dim).to(self.device)
         self.target_network.load_state_dict(self.q_network.state_dict())
         self.target_network.eval()
@@ -310,9 +319,10 @@ class ProductivityRLAgent:
         Epsilon-greedy action selection with cooldown masking.
         Returns action index.
         """
-        # Decay epsilon
-        self.epsilon = self.epsilon_end + (self.epsilon_start - self.epsilon_end) * \
-            np.exp(-self.steps_done / self.epsilon_decay)
+        # Decay epsilon only when not using greedy selection
+        if not greedy:
+            self.epsilon = self.epsilon_end + (self.epsilon_start - self.epsilon_end) * \
+                np.exp(-self.steps_done / self.epsilon_decay)
         self.steps_done += 1
 
         # Get valid actions (not in cooldown)
